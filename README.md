@@ -2,12 +2,13 @@
 
 <img src="assets/banner.png" width="100%" alt="HorseAI Banner">
 
+<br>
+
 # HorseAI
 
-### Modern Local AI powered by WebLLM and WebGPU
+### Modern Local AI powered by WebLLM & WebGPU
 
-Run powerful language models directly in your browser.  
-No backend. No cloud. Just your GPU.
+Run large language models directly in your browser with zero backend.
 
 <br>
 
@@ -19,18 +20,31 @@ No backend. No cloud. Just your GPU.
 <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white">
 </a>
 
-<a href="https://github.com/TheNotMichi/HorseAI/stargazers">
-<img src="https://img.shields.io/github/stars/TheNotMichi/HorseAI?style=for-the-badge">
-</a>
+<br><br>
+
+<img src="https://img.shields.io/github/stars/TheNotMichi/HorseAI?style=flat-square">
+<img src="https://img.shields.io/github/forks/TheNotMichi/HorseAI?style=flat-square">
+<img src="https://img.shields.io/github/issues/TheNotMichi/HorseAI?style=flat-square">
+<img src="https://img.shields.io/github/license/TheNotMichi/HorseAI?style=flat-square">
 
 </div>
 
 ---
 
-## Preview
+# Overview
+
+HorseAI is a modern desktop-like AI chat application that runs completely inside your web browser using **WebLLM** and **WebGPU**.
+
+No cloud. No backend. No API keys.
+
+Everything runs locally on your machine.
+
+---
+
+# Preview
 
 <p align="center">
-<img src="assets/screenshot.png" width="95%" alt="HorseAI Screenshot">
+<img src="assets/screenshot.png" width="95%">
 </p>
 
 ---
@@ -43,7 +57,7 @@ No backend. No cloud. Just your GPU.
 
 ### Local AI
 
-Run language models directly in your browser using WebGPU.
+Run models directly on your GPU using WebGPU.
 
 </td>
 
@@ -51,7 +65,7 @@ Run language models directly in your browser using WebGPU.
 
 ### Multi Chat
 
-Create and manage multiple conversations independently.
+Create and manage multiple conversations.
 
 </td>
 </tr>
@@ -61,7 +75,7 @@ Create and manage multiple conversations independently.
 
 ### Multiple Models
 
-Switch between different WebLLM models instantly.
+Switch between different WebLLM models.
 
 </td>
 
@@ -69,7 +83,7 @@ Switch between different WebLLM models instantly.
 
 ### Streaming
 
-Receive responses in real time with smooth streaming.
+Responses are generated in real time.
 
 </td>
 </tr>
@@ -77,17 +91,17 @@ Receive responses in real time with smooth streaming.
 <tr>
 <td>
 
-### Private
+### Persistent History
 
-Everything runs locally on your computer.
+Chats are automatically saved.
 
 </td>
 
 <td>
 
-### Responsive
+### Modern UI
 
-Optimized for desktop and mobile devices.
+Minimal, responsive and optimized interface.
 
 </td>
 </tr>
@@ -97,40 +111,42 @@ Optimized for desktop and mobile devices.
 
 # Installation
 
-Clone the repository
+Clone the repository.
 
 ```bash
 git clone https://github.com/TheNotMichi/HorseAI.git
 cd HorseAI
 ```
 
-Launch HorseAI
+Start the application.
 
 ```bash
 python launch.py
 ```
 
-The launcher automatically starts a local server and opens your browser.
-
----
-
-# Technologies
-
-- HTML5
-- CSS3
-- JavaScript (ES Modules)
-- WebLLM
-- WebGPU
-- Tailwind CSS
-- Python
+The launcher automatically opens HorseAI in your default browser.
 
 ---
 
 # Requirements
 
-- Python 3.8+
-- WebGPU compatible browser
-- Windows, Linux or macOS
+| Component        | Requirement             |
+| ---------------- | ----------------------- |
+| Python           | 3.8+                    |
+| Browser          | WebGPU compatible       |
+| Operating System | Windows, Linux or macOS |
+
+---
+
+# Technologies
+
+* HTML5
+* CSS3
+* JavaScript (ES Modules)
+* WebLLM
+* WebGPU
+* Tailwind CSS
+* Python
 
 ---
 
