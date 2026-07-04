@@ -1,34 +1,5 @@
 <div align="center">
 
-<table>
-<tr>
-<td width="90">
-
-<svg width="72" height="72" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<linearGradient id="horse" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" stop-color="#ff9a00"/>
-<stop offset="100%" stop-color="#ff5a00"/>
-</linearGradient>
-</defs>
-
-<path fill="url(#horse)" d="M64 10
-L88 24
-L104 48
-L98 84
-L72 112
-L42 102
-L34 74
-L22 52
-L40 24
-Z"/>
-
-<circle cx="77" cy="46" r="3" fill="white"/>
-
-</svg>
-
-</td>
-
 <td align="left">
 
 # HorseAI
