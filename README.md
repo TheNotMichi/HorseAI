@@ -23,11 +23,11 @@ HorseAI is a modern local AI chat application powered by WebLLM and WebGPU. It a
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/HorseAI.git
+git clone https://github.com/TheNotMichi/HorseAI.git
 cd HorseAI
 ```
 
-Start the local server:
+Start the application:
 
 ```bash
 python launch.py
