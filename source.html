@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HorseAI — WebLLM Multi-Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* ... estilos iguales que antes, sin cambios ... */
+        :root {
+            --bg: #06070a; --bg-el: #0e1015; --bg-card: #161920; --fg: #eef0f4;
+            --fg-dim: #6b7280; --accent: #f97316; --accent-lo: rgba(249, 115, 22, 0.12);
+            --border: #1e2330; --ok: #10b981; --err: #f87171; --warn: #f59e0b;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--fg);overflow:hidden;height:100dvh}
+        .mono{font-family:'JetBrains Mono',monospace}
+        ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:9px}
+        .glow{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 50% at 20% 10%,rgba(249,115,22,.04),transparent),radial-gradient(ellipse 50% 60% at 80% 90%,rgba(249,115,22,.02),transparent);animation:drift 30s ease-in-out infinite alternate}
+        @keyframes drift{to{transform:translate(2%,-1%) scale(1.02)}}
+        .grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:64px 64px}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.6)}} .pulse{animation:pulse 1.8s ease-in-out infinite}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0}} 
+        .cursor-stream::after{content:'▊';color:var(--accent);animation:blink .7s step-end infinite;font-size:.85em;margin-left:2px}
+        @keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}} .anim-in{animation:slideUp .28s ease-out both}
+        @keyframes fadeScale{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}} .fade-in{animation:fadeScale .3s ease-out both}
+        .progress-bar{transition:width .35s ease}
+        .dot{position:fixed;border-radius:50%;background:var(--accent);opacity:0;pointer-events:none;z-index:0}
+        @keyframes rise{0%{opacity:0;transform:translateY(0) scale(0)}8%{opacity:.5;transform:scale(1)}85%{opacity:.05}100%{opacity:0;transform:translateY(-95vh) scale(.3)}}
+        @keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}} .toast-in{animation:toastIn .3s ease-out both}
+        @keyframes toastOut{from{opacity:1}to{transform:translateX(110%);opacity:0}} .toast-out{animation:toastOut .28s ease-in both}
+        .input-wrap{transition:box-shadow .2s ease,border-color .2s ease} .input-wrap:focus-within{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 24px var(--accent-lo)}
+        .btn-send{transition:all .18s ease} .btn-send:hover:not(:disabled){background:var(--accent);color:var(--bg);transform:scale(1.08)} .btn-send:active:not(:disabled){transform:scale(.95)} .btn-send:disabled{opacity:.25;cursor:not-allowed}
+        .btn-stop{background:var(--err) !important;color:white !important;opacity:1 !important;transform:scale(1) !important} .btn-stop:hover{background:#ef4444 !important;transform:scale(1.1) !important}
+        .chip{transition:all .18s ease;cursor:pointer} .chip:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 16px var(--accent-lo)}
+        .model-select{appearance:none;background-color:var(--bg);color:var(--fg);border:1px solid var(--border);padding:8px 32px 8px 12px;border-radius:8px;width:100%;outline:none;font-size:12px;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:border-color .2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+        .model-select:focus{border-color:var(--accent)}.model-select option{background:var(--bg-el);color:var(--fg)}
+        .chat-item{display:flex;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer;transition:all .15s;border:1px solid transparent;margin-bottom:4px}
+        .chat-item:hover{background:var(--bg-card)}
+        .chat-item.active{background:var(--accent-lo);border-color:var(--accent)}
+        .chat-item .del-btn{opacity:0;transition:opacity .15s;color:var(--fg-dim)}
+        .chat-item:hover .del-btn{opacity:1}
+        .chat-item .del-btn:hover{color:var(--err)}
+        .chat-title-edit{cursor:pointer; border-bottom:1px dashed transparent; transition:border-color .2s}
+        .chat-title-edit:hover{border-color:var(--accent)}
+        .btn-add-model{background:var(--bg-card); border:1px dashed var(--border); border-radius:8px; padding:6px 12px; width:100%; text-align:center; color:var(--fg-dim); font-size:12px; transition:all .2s; cursor:pointer}
+        .btn-add-model:hover{border-color:var(--accent); color:var(--accent)}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+    </style>
+</head>
+<body>
+    <div class="glow"></div>
+    <div class="grid-bg"></div>
+    <div id="toasts" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <div class="relative z-10 flex h-full">
+        <aside id="sidebar" class="w-[280px] border-r border-[var(--border)] bg-[var(--bg-el)]/90 backdrop-blur-md flex-col shrink-0 hidden md:flex">
+            <div class="p-4 border-b border-[var(--border)] flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center">
+                        <svg viewBox="0 0 512 512" fill="white" class="w-6 h-6"><path d="M0 464V316.9C0 208.5 68.3 111.8 170.5 75.6L340.2 15.5C361.6 7.9 384 23.8 384 46.4c0 11-5.5 21.2-14.6 27.3L336 96c48.1 0 91.2 29.8 108.1 74.9l48.6 129.5c11.8 31.4 4.1 66.8-19.6 90.5c-16 16-37.8 25.1-60.5 25.1h-3.4c-26.1 0-50.9-11.6-67.6-31.7l-32.3-38.7c-11.7 4.1-24.2 6.4-37.3 6.4l-.1 0 0 0c-6.3 0-12.5-.5-18.6-1.5c-3.6-.6-7.2-1.4-10.7-2.3l0 0c-28.9-7.8-53.1-26.8-67.8-52.2c-4.4-7.6-14.2-10.3-21.9-5.8s-10.3 14.2-5.8 21.9c24 41.5 68.3 70 119.3 71.9l47.2 70.8c4 6.1 6.2 13.2 6.2 20.4c0 20.3-16.5 36.8-36.8 36.8H48c-26.5 0-48-21.5-48-48zM328 224c13.3 0 24-10.7 24-24s-10.7-24-24-24s-24 10.7-24 24s10.7 24 24 24z"/></svg>
+                    </div>
+                    <h1 class="text-sm font-bold tracking-tight">HorseAI</h1>
+                </div>
+                <button onclick="createNewChat()" class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--fg-dim)] hover:bg-[var(--bg-card)] hover:text-[var(--accent)] transition-colors" aria-label="Nuevo Chat"><i class="fas fa-plus text-xs"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-3 space-y-0" id="chatList"></div>
+            <div class="border-t border-[var(--border)] p-4 space-y-4">
+                <div>
+                    <p class="text-[10px] font-semibold text-[var(--fg-dim)] uppercase tracking-widest mb-2">Modelo</p>
+                    <select id="modelSelect" onchange="onModelChange()" class="model-select"></select>
+                </div>
+                <!-- Botón para añadir modelo personalizado -->
+                <button onclick="addCustomModel()" class="btn-add-model"><i class="fas fa-plus mr-1"></i>Añadir modelo</button>
+                <div class="flex items-center gap-2 text-xs">
+                    <span id="sDot" class="w-2 h-2 rounded-full bg-[var(--fg-dim)]"></span>
+                    <span id="sTxt" class="text-[var(--fg-dim)] truncate">Esperando...</span>
+                </div>
+                <div id="progBox" class="hidden">
+                    <div class="w-full h-1 bg-[var(--bg)] rounded-full overflow-hidden"><div id="progBar" class="progress-bar h-full bg-gradient-to-r from-[var(--accent)] to-[#fbbf24] rounded-full" style="width:0%"></div></div>
+                    <p id="progTxt" class="text-[10px] text-[var(--fg-dim)] mt-1 mono truncate h-4">...</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col min-w-0">
+            <header class="h-13 border-b border-[var(--border)] bg-[var(--bg-el)]/60 backdrop-blur-md flex items-center px-5 shrink-0">
+                <button onclick="toggleSidebar()" class="md:hidden mr-3 text-[var(--fg-dim)] hover:text-[var(--fg)]" aria-label="Menu"><i class="fas fa-bars"></i></button>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-comments text-[var(--accent)] text-sm"></i>
+                    <span class="font-semibold text-sm chat-title-edit" id="headerTitle" ondblclick="renameCurrentChat()" title="Doble clic para renombrar">Nuevo Chat</span>
+                </div>
+                <div class="ml-auto flex items-center gap-4">
+                    <span id="tokC" class="mono text-[11px] text-[var(--fg-dim)]">0 tokens</span>
+                    <span id="genT" class="mono text-[11px] text-[var(--accent)] hidden"></span>
+                </div>
+            </header>
+            
+            <div id="chat" class="flex-1 overflow-y-auto px-4 py-5 md:px-6 md:py-6"></div>
+
+            <div class="border-t border-[var(--border)] bg-[var(--bg-el)]/60 backdrop-blur-md p-3 md:p-4 shrink-0">
+                <div class="max-w-3xl mx-auto">
+                    <div class="input-wrap flex items-end gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
+                        <textarea id="inp" rows="1" placeholder="Escribe un mensaje..." class="flex-1 bg-transparent resize-none outline-none text-sm leading-relaxed max-h-32 text-[var(--fg)] placeholder:text-[var(--fg-dim)]" onkeydown="onKey(event)" oninput="resize(this)" aria-label="Mensaje"></textarea>
+                        <button id="sendBtn" onclick="handleSendStop()" class="btn-send w-9 h-9 rounded-xl border border-[var(--border)] flex items-center justify-center text-[var(--fg-dim)] text-sm shrink-0" disabled aria-label="Enviar"><i class="fas fa-arrow-up"></i></button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="mobSide" class="fixed inset-0 z-40 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="toggleSidebar()"></div>
+        <aside class="absolute left-0 top-0 bottom-0 w-[280px] bg-[var(--bg-el)] border-r border-[var(--border)] flex flex-col fade-in">
+            <div class="p-4 border-b border-[var(--border)] flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center">
+                        <svg viewBox="0 0 512 512" fill="white" class="w-6 h-6"><path d="M0 464V316.9C0 208.5 68.3 111.8 170.5 75.6L340.2 15.5C361.6 7.9 384 23.8 384 46.4c0 11-5.5 21.2-14.6 27.3L336 96c48.1 0 91.2 29.8 108.1 74.9l48.6 129.5c11.8 31.4 4.1 66.8-19.6 90.5c-16 16-37.8 25.1-60.5 25.1h-3.4c-26.1 0-50.9-11.6-67.6-31.7l-32.3-38.7c-11.7 4.1-24.2 6.4-37.3 6.4l-.1 0 0 0c-6.3 0-12.5-.5-18.6-1.5c-3.6-.6-7.2-1.4-10.7-2.3l0 0c-28.9-7.8-53.1-26.8-67.8-52.2c-4.4-7.6-14.2-10.3-21.9-5.8s-10.3 14.2-5.8 21.9c24 41.5 68.3 70 119.3 71.9l47.2 70.8c4 6.1 6.2 13.2 6.2 20.4c0 20.3-16.5 36.8-36.8 36.8H48c-26.5 0-48-21.5-48-48zM328 224c13.3 0 24-10.7 24-24s-10.7-24-24-24s-24 10.7-24 24s10.7 24 24 24z"/></svg>
+                    </div>
+                    <h1 class="text-sm font-bold">Chats</h1>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="createNewChat();toggleSidebar()" class="text-[var(--fg-dim)] hover:text-[var(--accent)]"><i class="fas fa-plus"></i></button>
+                    <button onclick="toggleSidebar()" class="text-[var(--fg-dim)] hover:text-[var(--fg)]"><i class="fas fa-xmark"></i></button>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-3" id="chatListMob"></div>
+            <div class="p-4 border-t border-[var(--border)] space-y-4">
+                <select id="modelSelectMob" onchange="syncModelSelect(this.value)" class="model-select"></select>
+                <button onclick="addCustomModel()" class="btn-add-model"><i class="fas fa-plus mr-1"></i>Añadir modelo</button>
+            </div>
+        </aside>
+    </div>
+
+    <script type="module">
+        import * as webllm from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.78/+esm";
+
+        // Modelos predefinidos (lista base)
+        const DEFAULT_MODELS = [
+            { id: "Llama-3.1-8B-Instruct-q4f16_1-MLC", name: "Llama 3.1 8B", vram: "4.5 GB" },
+            { id: "Phi-3.5-mini-instruct-q4f16_1-MLC", name: "Phi 3.5 Mini", vram: "2.5 GB" },
+            { id: "SmolLM2-1.7B-Instruct-q4f16_1-MLC", name: "SmolLM2 1.7B", vram: "1.0 GB" },
+            { id: "SmolLM2-360M-Instruct-q4f16_1-MLC", name: "SmolLM2 360M", vram: "0.4 GB" },
+            { id: "Mistral-7B-Instruct-v0.3-q4f16_1-MLC", name: "Mistral 7B", vram: "4.8 GB" },
+            { id: "Gemma-2-2b-it-q4f16_1-MLC", name: "Gemma 2 2B", vram: "1.6 GB" },
+            { id: "Qwen2-1.5B-Instruct-q4f16_1-MLC", name: "Qwen 2.5 1.5B", vram: "1.2 GB" },
+            { id: "DeepSeek-V2-Lite-Chat-q4f16_1-MLC", name: "DeepSeek V2 Lite", vram: "3.8 GB" },
+            { id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", name: "Llama 3.2 3B", vram: "2.2 GB" },
+            { id: "Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC", name: "Hermes 2 Pro 8B", vram: "4.6 GB" },
+            { id: "Qwen2.5-7B-Instruct-q4f16_1-MLC", name: "Qwen 2.5 7B", vram: "4.4 GB" },
+            { id: "WizardMath-7B-V1.1-q4f16_1-MLC", name: "WizardMath 7B", vram: "4.8 GB" }
+        ];
+
+        // Modelo por defecto (Hermes)
+        const DEFAULT_MODEL_ID = "Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC";
+
+        // Cargar modelos personalizados desde localStorage
+        function loadCustomModels() {
+            try {
+                const raw = localStorage.getItem('horseai_custom_models');
+                if (raw) return JSON.parse(raw);
+            } catch (e) { console.warn("Error loading custom models", e); }
+            return [];
+        }
+
+        function saveCustomModels(custom) {
+            localStorage.setItem('horseai_custom_models', JSON.stringify(custom));
+        }
+
+        // Lista completa de modelos (base + personalizados)
+        let MODELS = [...DEFAULT_MODELS, ...loadCustomModels()];
+
+        const STORAGE_KEY = 'webllm_v7_hard_replace';
+
+        let engine = null; let busy = false; let isStopped = false; let engineLoading = false;
+        let loadedModelId = null;   // qué modelo tiene cargado 'engine' ahora mismo
+        let loadingModelId = null;  // qué modelo se está cargando (si engineLoading)
+        let state = { activeChatId: null, chats: {} };
+        let loadTimeout;
+        let streamingChatId = null;
+
+        const $ = id => document.getElementById(id);
+        const chatEl = $('chat'), inpEl = $('inp'), sendEl = $('sendBtn');
+        const sDot = $('sDot'), sTxt = $('sTxt'), progBox = $('progBox'), progBar = $('progBar'), progTxt = $('progTxt');
+        const tokC = $('tokC'), genT = $('genT'), chatListEl = $('chatList'), chatListMobEl = $('chatListMob');
+        const headerTitle = $('headerTitle');
+
+        window.handleSendStop = handleSendStop; window.clearChat = clearChat; window.useChip = useChip;
+        window.onKey = onKey; window.resize = resize; window.toggleSidebar = toggleSidebar;
+        window.onModelChange = onModelChange; window.syncModelSelect = syncModelSelect;
+        window.createNewChat = createNewChat; window.switchChat = switchChat; window.deleteChat = deleteChat;
+        window.addCustomModel = addCustomModel;
+        window.renameCurrentChat = renameCurrentChat;
+        window.renameChatFromList = renameChatFromList;
+
+        function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+
+        function activeChat() { return state.chats[state.activeChatId] || null; }
+
+        // Guardar estado de chats
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        // Cargar estado de chats
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed.history && !parsed.chats) {
+                        const id = generateId();
+                        state = { activeChatId: id, chats: { [id]: { id, title: 'Chat Migrado', model: parsed.model || DEFAULT_MODEL_ID, history: parsed.history, tokTotal: parsed.tokTotal || 0, ts: Date.now() } } };
+                    } else { state = parsed; }
+                }
+            } catch (e) { console.error("Error cargando estado:", e); }
+            if (Object.keys(state.chats).length === 0) {
+                // Crear primer chat con Hermes por defecto
+                createNewChat(true);
+            } else {
+                // Asegurar que el modelo activo sea Hermes si no tiene modelo asignado
+                const chat = activeChat();
+                if (chat && !chat.model) {
+                    chat.model = DEFAULT_MODEL_ID;
+                    saveState();
+                }
+            }
+            refreshHeaderUI();
+        }
+
+        function refreshHeaderUI() {
+            const chat = activeChat();
+            if (!chat) return;
+            // Actualizar selectores
+            populateModelSelects();
+            $('modelSelect').value = chat.model || DEFAULT_MODEL_ID;
+            $('modelSelectMob').value = chat.model || DEFAULT_MODEL_ID;
+            headerTitle.textContent = chat.title || 'Nuevo Chat';
+            tokC.textContent = (chat.tokTotal || 0) + ' tokens';
+        }
+
+        function createNewChat(silent = false) {
+            const id = generateId();
+            // Usar Hermes como modelo por defecto
+            const model = activeChat()?.model || DEFAULT_MODEL_ID;
+            state.chats[id] = { id, title: 'Nuevo Chat', model, history: [], tokTotal: 0, ts: Date.now() };
+            state.activeChatId = id;
+            saveState();
+            if (!silent) switchChat(id);
+        }
+
+        function switchChat(id) {
+            if (!state.chats[id]) return;
+            state.activeChatId = id;
+            saveState();
+            refreshHeaderUI();
+            renderChatList();
+            renderMessages();
+            genT.classList.add('hidden');
+            if (!engineLoading) {
+                const isGeneratingHere = busy && streamingChatId === id;
+                setStatus(isGeneratingHere ? 'gen' : 'ok', isGeneratingHere ? 'Generando...' : 'Listo');
+            }
+            if (busy && streamingChatId === id) {
+                sendEl.innerHTML = '<i class="fas fa-stop"></i>'; sendEl.classList.add('btn-stop'); sendEl.disabled = false;
+            } else {
+                sendEl.innerHTML = '<i class="fas fa-arrow-up"></i>'; sendEl.classList.remove('btn-stop');
+            }
+            updBtn();
+
+            // Bug clave: cambiar de chat NO recargaba el modelo asignado a ese chat, así que
+            // se podía terminar generando con el motor de otro chat sin darse cuenta.
+            // Si no hay una generación en curso (no podemos tocar el motor mientras se usa),
+            // y el chat al que entramos tiene un modelo distinto al cargado, lo recargamos.
+            const chat = state.chats[id];
+            if (!busy && chat && chat.model && chat.model !== loadedModelId) {
+                initEngine();
+            }
+        }
+
+        function deleteChat(id, e) {
+            if (e) e.stopPropagation();
+            delete state.chats[id];
+            const ids = Object.keys(state.chats);
+            if (state.activeChatId === id) {
+                state.activeChatId = ids.length > 0 ? ids[ids.length - 1] : null;
+                if (!state.activeChatId) { createNewChat(true); return; }
+            }
+            saveState(); refreshHeaderUI(); renderChatList(); renderMessages();
+        }
+
+        // Renombrar chat actual
+        function renameCurrentChat() {
+            const chat = activeChat();
+            if (!chat) return;
+            const newName = prompt("Nuevo nombre para el chat:", chat.title);
+            if (newName !== null && newName.trim() !== '') {
+                chat.title = newName.trim();
+                saveState();
+                refreshHeaderUI();
+                renderChatList();
+                toast('Chat renombrado', 'ok');
+            }
+        }
+
+        // Renombrar desde la lista (doble clic)
+        function renameChatFromList(id, e) {
+            if (e) e.stopPropagation();
+            const chat = state.chats[id];
+            if (!chat) return;
+            const newName = prompt("Nuevo nombre para el chat:", chat.title);
+            if (newName !== null && newName.trim() !== '') {
+                chat.title = newName.trim();
+                saveState();
+                if (id === state.activeChatId) refreshHeaderUI();
+                renderChatList();
+                toast('Chat renombrado', 'ok');
+            }
+        }
+
+        function renderChatList() {
+            const html = Object.values(state.chats).sort((a, b) => b.ts - a.ts).map(c => `
+                <div class="chat-item ${c.id === state.activeChatId ? 'active' : ''}" onclick="switchChat('${c.id}')">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-medium truncate chat-title-edit" ondblclick="renameChatFromList('${c.id}', event)" title="Doble clic para renombrar">${c.title}${streamingChatId === c.id ? ' <i class="fas fa-circle-notch fa-spin" style="font-size:9px"></i>' : ''}</p>
+                        <p class="text-[10px] text-[var(--fg-dim)] truncate">${MODELS.find(m=>m.id===c.model)?.name || 'Modelo'} · ${c.history.length} msgs</p>
+                    </div>
+                    <button class="del-btn p-1" onclick="deleteChat('${c.id}', event)" aria-label="Borrar"><i class="fas fa-xmark text-[10px]"></i></button>
+                </div>`).join('');
+            chatListEl.innerHTML = html;
+            chatListMobEl.innerHTML = html;
+        }
+
+        function renderMessages() {
+            const oldNode = document.getElementById('chat-render-target');
+            if (oldNode) oldNode.remove();
+
+            const newNode = document.createElement('div');
+            newNode.id = 'chat-render-target';
+            newNode.style.minHeight = '100%';
+            newNode.style.display = 'flex';
+            newNode.style.flexDirection = 'column';
+
+            const chat = activeChat();
+            const msgs = chat ? chat.history : [];
+            if (msgs.length === 0) {
+                newNode.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-center px-4 fade-in">
+                    <div class="w-16 h-16 flex items-center justify-center mb-5">
+                        <svg viewBox="0 0 512 512" fill="white" class="w-12 h-12"><path d="M0 464V316.9C0 208.5 68.3 111.8 170.5 75.6L340.2 15.5C361.6 7.9 384 23.8 384 46.4c0 11-5.5 21.2-14.6 27.3L336 96c48.1 0 91.2 29.8 108.1 74.9l48.6 129.5c11.8 31.4 4.1 66.8-19.6 90.5c-16 16-37.8 25.1-60.5 25.1h-3.4c-26.1 0-50.9-11.6-67.6-31.7l-32.3-38.7c-11.7 4.1-24.2 6.4-37.3 6.4l-.1 0 0 0c-6.3 0-12.5-.5-18.6-1.5c-3.6-.6-7.2-1.4-10.7-2.3l0 0c-28.9-7.8-53.1-26.8-67.8-52.2c-4.4-7.6-14.2-10.3-21.9-5.8s-10.3 14.2-5.8 21.9c24 41.5 68.3 70 119.3 71.9l47.2 70.8c4 6.1 6.2 13.2 6.2 20.4c0 20.3-16.5 36.8-36.8 36.8H48c-26.5 0-48-21.5-48-48zM328 224c13.3 0 24-10.7 24-24s-10.7-24-24-24s-24 10.7-24 24s10.7 24 24 24z"/></svg>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">HorseAI</h2>
+                    <p class="text-[var(--fg-dim)] max-w-md mb-8 text-sm leading-relaxed">Selecciona el modelo en el panel. El historial se guarda automáticamente.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-lg w-full">
+                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-code text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Explicame como funciona QuickSort en Python</button>
+                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-lightbulb text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Escribe una historia corta de ciencia ficcion</button>
+                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-square-root-variable text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Demuestra por que la raiz de 2 es irracional</button>
+                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-globe text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Diferencias entre WebGPU, WebGL y Vulkan?</button>
+                    </div>
+                </div>`;
+            } else {
+                let html = '';
+                const modelName = MODELS.find(m => m.id === chat.model)?.name || "LLM";
+                msgs.forEach(msg => {
+                    const isUser = msg.role === 'user';
+                    const label = !isUser ? `<div class="text-[11px] text-[var(--accent)] font-semibold mb-1.5 flex items-center gap-1.5"><svg viewBox="0 0 512 512" fill="white" style="width:10px;height:10px"><path d="M0 464V316.9C0 208.5 68.3 111.8 170.5 75.6L340.2 15.5C361.6 7.9 384 23.8 384 46.4c0 11-5.5 21.2-14.6 27.3L336 96c48.1 0 91.2 29.8 108.1 74.9l48.6 129.5c11.8 31.4 4.1 66.8-19.6 90.5c-16 16-37.8 25.1-60.5 25.1h-3.4c-26.1 0-50.9-11.6-67.6-31.7l-32.3-38.7c-11.7 4.1-24.2 6.4-37.3 6.4l-.1 0 0 0c-6.3 0-12.5-.5-18.6-1.5c-3.6-.6-7.2-1.4-10.7-2.3l0 0c-28.9-7.8-53.1-26.8-67.8-52.2c-4.4-7.6-14.2-10.3-21.9-5.8s-10.3 14.2-5.8 21.9c24 41.5 68.3 70 119.3 71.9l47.2 70.8c4 6.1 6.2 13.2 6.2 20.4c0 20.3-16.5 36.8-36.8 36.8H48c-26.5 0-48-21.5-48-48zM328 224c13.3 0 24-10.7 24-24s-10.7-24-24-24s-24 10.7-24 24s10.7 24 24 24z"/></svg> ${modelName}</div>` : '';
+                    html += `
+                    <div class="flex ${isUser ? 'justify-end' : 'justify-start'} mb-4">
+                        <div class="max-w-[88%] md:max-w-[72%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${isUser ? 'bg-[#1a1008] border border-[#3d2a10] text-[var(--fg)]' : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--fg)]'}">
+                            ${label}
+                            <div class="whitespace-pre-wrap break-words">${msg.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                        </div>
+                    </div>`;
+                });
+                newNode.innerHTML = html;
+            }
+
+            chatEl.appendChild(newNode);
+            requestAnimationFrame(() => { chatEl.scrollTop = chatEl.scrollHeight; });
+        }
+
+        // Poblar selectores con la lista actual de modelos
+        function populateModelSelects() {
+            [$('modelSelect'), $('modelSelectMob')].forEach(select => {
+                select.innerHTML = '';
+                MODELS.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.id;
+                    opt.textContent = `${m.name} (${m.vram})${m.custom ? ' (importado)' : ''}`;
+                    select.appendChild(opt);
+                });
+            });
+        }
+
+        // Añadir modelo personalizado
+        function addCustomModel() {
+            const id = prompt("ID del modelo (ej. Llama-3.1-8B-Instruct-q4f16_1-MLC):");
+            if (!id) return;
+            const name = prompt("Nombre amigable (ej. Mi modelo):");
+            if (!name) return;
+            const vram = prompt("VRAM estimada (ej. 4.2 GB):") || "? GB";
+            // Evitar duplicados
+            if (MODELS.some(m => m.id === id)) {
+                toast("Ya existe un modelo con ese ID", "warn");
+                return;
+            }
+            const newModel = { id, name, vram, custom: true };
+            MODELS.push(newModel);
+            // Guardar en localStorage
+            const customs = loadCustomModels();
+            customs.push(newModel);
+            saveCustomModels(customs);
+            populateModelSelects();
+            // Si el chat activo no tiene modelo, asignar este
+            const chat = activeChat();
+            if (chat && !chat.model) {
+                chat.model = id;
+                saveState();
+                refreshHeaderUI();
+            }
+            toast(`Modelo "${name}" añadido`, "ok");
+        }
+
+        async function onModelChange() {
+            if (busy) { toast("Detén la generación primero", "warn"); $('modelSelect').value = activeChat()?.model; return; }
+            const chat = activeChat(); if (!chat) return;
+            const newModel = $('modelSelect').value;
+            chat.model = newModel;
+            $('modelSelectMob').value = newModel;
+            saveState(); renderChatList(); await initEngine();
+        }
+        function syncModelSelect(val) { $('modelSelect').value = val; onModelChange(); }
+
+        async function initEngine() {
+            const chat = activeChat(); if (!chat) return;
+            const modelId = chat.model || DEFAULT_MODEL_ID;
+            if (engine && loadedModelId === modelId) return; // ya está cargado este modelo
+            if (engineLoading && loadingModelId === modelId) return; // ya se está cargando este modelo
+            if (engine) { try { engine.unload(); } catch(e) {} engine = null; loadedModelId = null; }
+            engineLoading = true; loadingModelId = modelId;
+            setStatus('loading', 'Conectando...'); progBox.classList.remove('hidden'); progBar.style.width = '5%'; progTxt.textContent = 'Resolviendo módulos...'; updBtn();
+            let progressReceived = false;
+            loadTimeout = setTimeout(() => { if (!progressReceived) failLoad("Timeout: Servidor MLC no responde."); }, 30000);
+            try {
+                engine = await webllm.CreateMLCEngine(modelId, {
+                    initProgressCallback: (report) => {
+                        if (!progressReceived) { progressReceived = true; clearTimeout(loadTimeout); }
+                        const p = Math.max(0, Math.min(100, Math.round(report.progress * 100)));
+                        progBar.style.width = p + '%'; progTxt.textContent = report.text || `${p}%`;
+                        if (report.text.includes("Load")) setStatus('loading', `Descargando (${p}%)...`);
+                        else if (report.text.includes("Compile")) setStatus('loading', 'Compilando shaders...');
+                        else if (report.text.includes("Finish")) setStatus('loading', 'Iniciando...');
+                    }
+                });
+                clearTimeout(loadTimeout); engineLoading = false; loadingModelId = null; loadedModelId = modelId;
+                setStatus('ok', 'Listo'); progBox.classList.add('hidden');
+                toast(`${MODELS.find(m => m.id === modelId)?.name || modelId} listo`, 'ok'); updBtn();
+            } catch (e) { clearTimeout(loadTimeout); engineLoading = false; loadingModelId = null; failLoad(e.message); }
+        }
+
+        function failLoad(err) { setStatus('err', 'Error'); progBox.classList.add('hidden'); toast("Error: " + err, 'err'); updBtn(); }
+
+        function handleSendStop() {
+            if (busy) { isStopped = true; sendEl.innerHTML = '<i class="fas fa-arrow-up"></i>'; sendEl.classList.remove('btn-stop'); sendEl.disabled = true; }
+            else send();
+        }
+
+        async function send() {
+            const txt = inpEl.value.trim(); if (!txt) return;
+            if (busy) { toast("Ya hay una respuesta generándose. Espera a que termine.", "warn"); return; }
+            if (!engine) return;
+
+            const chatId = state.activeChatId;
+            const chat = state.chats[chatId]; if (!chat) return;
+
+            // Evita el bug de responder con el modelo equivocado: si el motor cargado no
+            // corresponde al modelo asignado a este chat, lo cargamos primero y no enviamos aún.
+            const wantedModel = chat.model || DEFAULT_MODEL_ID;
+            if (wantedModel !== loadedModelId) {
+                toast("Cargando el modelo de este chat, espera un momento...", "warn");
+                if (!engineLoading || loadingModelId !== wantedModel) initEngine();
+                return;
+            }
+
+            const wasEmpty = chat.history.length === 0;
+
+            busy = true; isStopped = false; streamingChatId = chatId;
+            let content = null;
+            let fullText = "";
+
+            try {
+                if (chatId === state.activeChatId && wasEmpty) {
+                    const oldNode = document.getElementById('chat-render-target');
+                    if (oldNode) oldNode.remove();
+                    const freshNode = document.createElement('div');
+                    freshNode.id = 'chat-render-target';
+                    freshNode.style.minHeight = '100%';
+                    freshNode.style.display = 'flex';
+                    freshNode.style.flexDirection = 'column';
+                    chatEl.appendChild(freshNode);
+                }
+
+                if (wasEmpty) {
+                    chat.title = txt.substring(0, 35) + (txt.length > 35 ? '...' : '');
+                    if (chatId === state.activeChatId) headerTitle.textContent = chat.title;
+                }
+
+                chat.history.push({ role: "user", content: txt });
+                if (chatId === state.activeChatId) addLiveMsg('user', txt);
+                inpEl.value = ''; resize(inpEl); saveState();
+
+                if (chatId === state.activeChatId) {
+                    setStatus('gen', 'Generando...');
+                    sendEl.innerHTML = '<i class="fas fa-stop"></i>'; sendEl.classList.add('btn-stop'); sendEl.disabled = false;
+                }
+                renderChatList();
+
+                if (chatId === state.activeChatId) {
+                    const bubble = addLiveMsg('assistant', '');
+                    content = bubble.querySelector('.mc');
+                    content.classList.add('cursor-stream');
+                }
+                const t0 = performance.now();
+
+                const stream = await engine.chat.completions.create({ messages: chat.history.slice(-15), max_tokens: 1024, temperature: 0.7, stream: true });
+                for await (const chunk of stream) {
+                    if (isStopped) { toast("Detenido", "warn"); break; }
+                    const delta = chunk.choices[0]?.delta?.content;
+                    if (delta) {
+                        fullText += delta;
+                        if (chatId === state.activeChatId && content) { content.textContent = fullText; scrollEnd(); }
+                    }
+                }
+                const sec = ((performance.now() - t0) / 1000).toFixed(1);
+                if (content) content.classList.remove('cursor-stream');
+
+                if (fullText) {
+                    chat.history.push({ role: "assistant", content: fullText });
+                    chat.tokTotal = (chat.tokTotal || 0) + Math.round(fullText.length / 3.5);
+                    if (chatId === state.activeChatId) {
+                        tokC.textContent = chat.tokTotal + ' tokens';
+                        genT.textContent = sec + 's'; genT.classList.remove('hidden');
+                    }
+                }
+                saveState();
+            } catch (e) {
+                if (content) content.classList.remove('cursor-stream');
+                if (!fullText && content) { content.textContent = 'Error: ' + e.message; content.style.color = 'var(--err)'; toast('Error: ' + e.message, 'err'); }
+                else saveState();
+            } finally {
+                busy = false; streamingChatId = null;
+                const stillExists = !!state.chats[chatId];
+                if (stillExists && chatId === state.activeChatId) {
+                    setStatus('ok', 'Listo');
+                    sendEl.innerHTML = '<i class="fas fa-arrow-up"></i>'; sendEl.classList.remove('btn-stop'); updBtn(); scrollEnd();
+                } else if (stillExists && fullText) {
+                    toast(`Respuesta lista en "${chat.title}"`, 'ok');
+                }
+                renderChatList();
+            }
+        }
+
+        function addLiveMsg(role, text) {
+            const wrap = document.createElement('div');
+            wrap.className = `flex mb-4 ${role === 'user' ? 'justify-end' : 'justify-start'} anim-in`;
+            const bub = document.createElement('div');
+            bub.className = 'max-w-[88%] md:max-w-[72%] rounded-2xl px-4 py-3 text-sm leading-relaxed ' + (role === 'user' ? 'bg-[#1a1008] border border-[#3d2a10] text-[var(--fg)]' : 'bg-[var(--bg-card)] border border-[var(--border)] text-[var(--fg)]');
+            
+            if (role === 'assistant') {
+                const lbl = document.createElement('div');
+                const name = MODELS.find(m => m.id === activeChat()?.model)?.name || "LLM";
+                lbl.className = 'text-[11px] text-[var(--accent)] font-semibold mb-1.5 flex items-center gap-1.5';
+                lbl.innerHTML = `<svg viewBox="0 0 512 512" fill="white" style="width:10px;height:10px"><path d="M0 464V316.9C0 208.5 68.3 111.8 170.5 75.6L340.2 15.5C361.6 7.9 384 23.8 384 46.4c0 11-5.5 21.2-14.6 27.3L336 96c48.1 0 91.2 29.8 108.1 74.9l48.6 129.5c11.8 31.4 4.1 66.8-19.6 90.5c-16 16-37.8 25.1-60.5 25.1h-3.4c-26.1 0-50.9-11.6-67.6-31.7l-32.3-38.7c-11.7 4.1-24.2 6.4-37.3 6.4l-.1 0 0 0c-6.3 0-12.5-.5-18.6-1.5c-3.6-.6-7.2-1.4-10.7-2.3l0 0c-28.9-7.8-53.1-26.8-67.8-52.2c-4.4-7.6-14.2-10.3-21.9-5.8s-10.3 14.2-5.8 21.9c24 41.5 68.3 70 119.3 71.9l47.2 70.8c4 6.1 6.2 13.2 6.2 20.4c0 20.3-16.5 36.8-36.8 36.8H48c-26.5 0-48-21.5-48-48zM328 224c13.3 0 24-10.7 24-24s-10.7-24-24-24s-24 10.7-24 24s10.7 24 24 24z"/></svg> ${name}`;
+                bub.appendChild(lbl);
+            }
+            
+            const mc = document.createElement('div'); 
+            mc.className = 'mc whitespace-pre-wrap break-words'; 
+            mc.textContent = text;
+            
+            bub.appendChild(mc); 
+            wrap.appendChild(bub); 
+            
+            const target = document.getElementById('chat-render-target') || chatEl;
+            target.appendChild(wrap); 
+            scrollEnd();
+            return wrap;
+        }
+
+        function setStatus(s, t) {
+            sTxt.textContent = t; sDot.className = 'w-2 h-2 rounded-full';
+            const map = { loading: ['bg-[var(--warn)]', 'pulse'], ok: ['bg-[var(--ok)]'], err: ['bg-[var(--err)]'], gen: ['bg-[var(--accent)]', 'pulse'] };
+            sDot.classList.add(...map[s] || map.ok);
+            const colors = { loading: 'var(--warn)', ok: 'var(--ok)', err: 'var(--err)', gen: 'var(--accent)' };
+            sTxt.style.color = colors[s] || colors.ok;
+        }
+
+        function clearChat() {
+            const chat = activeChat(); if (!chat) return;
+            if (streamingChatId === chat.id) { toast("Detén la generación antes de limpiar este chat", "warn"); return; }
+            chat.history = []; chat.tokTotal = 0; chat.title = 'Nuevo Chat';
+            tokC.textContent = '0 tokens'; genT.classList.add('hidden');
+            headerTitle.textContent = 'Nuevo Chat';
+            saveState(); renderChatList(); renderMessages(); toast('Chat limpiado', 'info');
+        }
+        
+        function useChip(btn) { inpEl.value = btn.textContent.trim(); updBtn(); send(); }
+        function onKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendStop(); } }
+        function resize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 128) + 'px'; updBtn(); }
+        function updBtn() {
+            if (!busy) {
+                const chat = activeChat();
+                const modelReady = !!engine && chat && (chat.model || DEFAULT_MODEL_ID) === loadedModelId;
+                sendEl.disabled = !inpEl.value.trim() || !modelReady;
+            }
+        }
+        function scrollEnd() { chatEl.scrollTop = chatEl.scrollHeight; }
+        function toggleSidebar() { $('mobSide').classList.toggle('hidden'); }
+
+        function toast(msg, type = 'info') {
+            const c = $('toasts'); const d = document.createElement('div');
+            const colors = { ok: 'border-[#10b981] bg-[#10b981]/10', err: 'border-[#f87171] bg-[#f87171]/10', warn: 'border-[#f59e0b] bg-[#f59e0b]/10', info: 'border-[var(--border)] bg-[var(--bg-card)]' };
+            const icons  = { ok: 'fa-circle-check text-[#10b981]', err: 'fa-circle-exclamation text-[#f87171]', warn: 'fa-triangle-exclamation text-[#f59e0b]', info: 'fa-circle-info text-[var(--fg-dim)]' };
+            d.className = 'toast-in pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border ' + (colors[type]||colors.info) + ' backdrop-blur-md text-sm max-w-xs';
+            d.innerHTML = '<i class="fas ' + (icons[type]||icons.info) + ' text-xs shrink-0"></i><span>' + msg + '</span>';
+            c.appendChild(d);
+            setTimeout(() => { d.classList.replace('toast-in','toast-out'); setTimeout(() => d.remove(), 300); }, 3000);
+        }
+
+        (function spawnDots() {
+            for (let i = 0; i < 12; i++) {
+                const d = document.createElement('div'); d.className = 'dot'; const sz = 1.5 + Math.random() * 2;
+                Object.assign(d.style, { left: Math.random()*100+'%', top: (50+Math.random()*50)+'%', width: sz+'px', height: sz+'px', animation: `rise ${10+Math.random()*15}s linear ${Math.random()*14}s infinite` });
+                document.body.appendChild(d);
+            }
+        })();
+
+        // Inicializar
+        populateModelSelects();
+        loadState();
+        renderChatList();
+        renderMessages();
+        // Cargar el motor con el modelo del chat activo (Hermes por defecto)
+        initEngine();
+    </script>
+</body>
+</html>
