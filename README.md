@@ -1,92 +1,147 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="HorseAI Banner" width="100%">
+<img src="assets/banner.png" width="100%" alt="HorseAI Banner">
 
 # HorseAI
 
-**A modern local AI chat powered by WebLLM and WebGPU.**
+### Modern Local AI powered by WebLLM and WebGPU
 
-Run large language models directly in your browser with no backend required.
+Run powerful language models directly in your browser.  
+No backend. No cloud. Just your GPU.
 
 <br>
 
-<a href="https://github.com/TheNotMichi/HorseAI">
-<img src="https://img.shields.io/badge/Repository-181717?style=for-the-badge&logo=github&logoColor=white" alt="Repository">
-</a>
-
-<a href="#features">
-<img src="https://img.shields.io/badge/Features-f97316?style=for-the-badge" alt="Features">
-</a>
-
 <a href="#installation">
-<img src="https://img.shields.io/badge/Installation-2563eb?style=for-the-badge&logo=windows-terminal&logoColor=white" alt="Installation">
+<img src="https://img.shields.io/badge/Get%20Started-f97316?style=for-the-badge&logo=rocket&logoColor=white">
 </a>
 
-<br><br>
+<a href="https://github.com/TheNotMichi/HorseAI">
+<img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white">
+</a>
 
-<img src="https://img.shields.io/github/stars/TheNotMichi/HorseAI?style=flat-square" alt="Stars">
-<img src="https://img.shields.io/github/forks/TheNotMichi/HorseAI?style=flat-square" alt="Forks">
-<img src="https://img.shields.io/github/issues/TheNotMichi/HorseAI?style=flat-square" alt="Issues">
-<img src="https://img.shields.io/github/license/TheNotMichi/HorseAI?style=flat-square" alt="License">
+<a href="https://github.com/TheNotMichi/HorseAI/stargazers">
+<img src="https://img.shields.io/github/stars/TheNotMichi/HorseAI?style=for-the-badge">
+</a>
 
 </div>
 
 ---
 
-## Features
+## Preview
 
-* Modern and responsive interface
-* Multiple conversations
-* Multiple AI model support
-* Real-time streaming responses
-* Automatic conversation history
-* Local execution with WebGPU
-* No backend required
-* Custom WebLLM model support
-* Automatic model loading
-* Lightweight Python launcher
+<p align="center">
+<img src="assets/screenshot.png" width="95%" alt="HorseAI Screenshot">
+</p>
 
 ---
 
-## Installation
+# Features
 
-Clone the repository:
+<table>
+<tr>
+<td width="50%">
+
+### Local AI
+
+Run language models directly in your browser using WebGPU.
+
+</td>
+
+<td width="50%">
+
+### Multi Chat
+
+Create and manage multiple conversations independently.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### Multiple Models
+
+Switch between different WebLLM models instantly.
+
+</td>
+
+<td>
+
+### Streaming
+
+Receive responses in real time with smooth streaming.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### Private
+
+Everything runs locally on your computer.
+
+</td>
+
+<td>
+
+### Responsive
+
+Optimized for desktop and mobile devices.
+
+</td>
+</tr>
+</table>
+
+---
+
+# Installation
+
+Clone the repository
 
 ```bash
 git clone https://github.com/TheNotMichi/HorseAI.git
 cd HorseAI
 ```
 
-Start HorseAI:
+Launch HorseAI
 
 ```bash
 python launch.py
 ```
 
-The launcher automatically starts a local server and opens the application in your default web browser.
+The launcher automatically starts a local server and opens your browser.
 
 ---
 
-## Requirements
+# Technologies
 
-* Python 3.8 or later
-* A modern browser with WebGPU support
-* Windows, Linux or macOS
-
----
-
-## Technologies
-
-* HTML5
-* CSS3
-* JavaScript (ES Modules)
-* WebLLM
-* WebGPU
-* Tailwind CSS
-* Python
+- HTML5
+- CSS3
+- JavaScript (ES Modules)
+- WebLLM
+- WebGPU
+- Tailwind CSS
+- Python
 
 ---
 
-## License
+# Requirements
 
-This project is licensed under the MIT License.
+- Python 3.8+
+- WebGPU compatible browser
+- Windows, Linux or macOS
+
+---
+
+# License
+
+Released under the MIT License.
+
+---
+
+<div align="center">
+
+Made with ❤️ by **TheNotMichi**
+
+</div>
