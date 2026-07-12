@@ -64,19 +64,19 @@
                     </div>
                     <h1 class="text-sm font-bold tracking-tight">HorseAI</h1>
                 </div>
-                <button onclick="createNewChat()" class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--fg-dim)] hover:bg-[var(--bg-card)] hover:text-[var(--accent)] transition-colors" aria-label="Nuevo Chat"><i class="fas fa-plus text-xs"></i></button>
+                <button onclick="createNewChat()" class="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--fg-dim)] hover:bg-[var(--bg-card)] hover:text-[var(--accent)] transition-colors" aria-label="New Chat"><i class="fas fa-plus text-xs"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto p-3 space-y-0" id="chatList"></div>
             <div class="border-t border-[var(--border)] p-4 space-y-4">
                 <div>
-                    <p class="text-[10px] font-semibold text-[var(--fg-dim)] uppercase tracking-widest mb-2">Modelo</p>
+                    <p class="text-[10px] font-semibold text-[var(--fg-dim)] uppercase tracking-widest mb-2">Model</p>
                     <select id="modelSelect" onchange="onModelChange()" class="model-select"></select>
                 </div>
                 <!-- Botón para añadir modelo personalizado -->
-                <button onclick="addCustomModel()" class="btn-add-model"><i class="fas fa-plus mr-1"></i>Añadir modelo</button>
+                <button onclick="addCustomModel()" class="btn-add-model"><i class="fas fa-plus mr-1"></i>Add model</button>
                 <div class="flex items-center gap-2 text-xs">
                     <span id="sDot" class="w-2 h-2 rounded-full bg-[var(--fg-dim)]"></span>
-                    <span id="sTxt" class="text-[var(--fg-dim)] truncate">Esperando...</span>
+                    <span id="sTxt" class="text-[var(--fg-dim)] truncate">Waiting...</span>
                 </div>
                 <div id="progBox" class="hidden">
                     <div class="w-full h-1 bg-[var(--bg)] rounded-full overflow-hidden"><div id="progBar" class="progress-bar h-full bg-gradient-to-r from-[var(--accent)] to-[#fbbf24] rounded-full" style="width:0%"></div></div>
@@ -90,7 +90,7 @@
                 <button onclick="toggleSidebar()" class="md:hidden mr-3 text-[var(--fg-dim)] hover:text-[var(--fg)]" aria-label="Menu"><i class="fas fa-bars"></i></button>
                 <div class="flex items-center gap-2">
                     <i class="fas fa-comments text-[var(--accent)] text-sm"></i>
-                    <span class="font-semibold text-sm chat-title-edit" id="headerTitle" ondblclick="renameCurrentChat()" title="Doble clic para renombrar">Nuevo Chat</span>
+                    <span class="font-semibold text-sm chat-title-edit" id="headerTitle" ondblclick="renameCurrentChat()" title="Doble clic para renombrar">New Chat</span>
                 </div>
                 <div class="ml-auto flex items-center gap-4">
                     <span id="tokC" class="mono text-[11px] text-[var(--fg-dim)]">0 tokens</span>
@@ -103,7 +103,7 @@
             <div class="border-t border-[var(--border)] bg-[var(--bg-el)]/60 backdrop-blur-md p-3 md:p-4 shrink-0">
                 <div class="max-w-3xl mx-auto">
                     <div class="input-wrap flex items-end gap-2 rounded-2xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
-                        <textarea id="inp" rows="1" placeholder="Escribe un mensaje..." class="flex-1 bg-transparent resize-none outline-none text-sm leading-relaxed max-h-32 text-[var(--fg)] placeholder:text-[var(--fg-dim)]" onkeydown="onKey(event)" oninput="resize(this)" aria-label="Mensaje"></textarea>
+                        <textarea id="inp" rows="1" placeholder="Type a message..." class="flex-1 bg-transparent resize-none outline-none text-sm leading-relaxed max-h-32 text-[var(--fg)] placeholder:text-[var(--fg-dim)]" onkeydown="onKey(event)" oninput="resize(this)" aria-label="Mensaje"></textarea>
                         <button id="sendBtn" onclick="handleSendStop()" class="btn-send w-9 h-9 rounded-xl border border-[var(--border)] flex items-center justify-center text-[var(--fg-dim)] text-sm shrink-0" disabled aria-label="Enviar"><i class="fas fa-arrow-up"></i></button>
                     </div>
                 </div>
@@ -129,7 +129,7 @@
             <div class="flex-1 overflow-y-auto p-3" id="chatListMob"></div>
             <div class="p-4 border-t border-[var(--border)] space-y-4">
                 <select id="modelSelectMob" onchange="syncModelSelect(this.value)" class="model-select"></select>
-                <button onclick="addCustomModel()" class="btn-add-model"><i class="fas fa-plus mr-1"></i>Añadir modelo</button>
+                <button onclick="addCustomModel()" class="btn-add-model"><i class="fas fa-plus mr-1"></i>Add model</button>
             </div>
         </aside>
     </div>
@@ -137,7 +137,7 @@
     <script type="module">
         import * as webllm from "https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.78/+esm";
 
-        // Modelos predefinidos (lista base)
+        // Models predefinidos (lista base)
         const DEFAULT_MODELS = [
             { id: "Llama-3.1-8B-Instruct-q4f16_1-MLC", name: "Llama 3.1 8B", vram: "4.5 GB" },
             { id: "Phi-3.5-mini-instruct-q4f16_1-MLC", name: "Phi 3.5 Mini", vram: "2.5 GB" },
@@ -153,7 +153,7 @@
             { id: "WizardMath-7B-V1.1-q4f16_1-MLC", name: "WizardMath 7B", vram: "4.8 GB" }
         ];
 
-        // Modelo por defecto (Hermes)
+        // Model por defecto (Hermes)
         const DEFAULT_MODEL_ID = "Hermes-2-Pro-Llama-3-8B-q4f16_1-MLC";
 
         // Cargar modelos personalizados desde localStorage
@@ -237,7 +237,7 @@
             populateModelSelects();
             $('modelSelect').value = chat.model || DEFAULT_MODEL_ID;
             $('modelSelectMob').value = chat.model || DEFAULT_MODEL_ID;
-            headerTitle.textContent = chat.title || 'Nuevo Chat';
+            headerTitle.textContent = chat.title || 'New Chat';
             tokC.textContent = (chat.tokTotal || 0) + ' tokens';
         }
 
@@ -245,7 +245,7 @@
             const id = generateId();
             // Usar Hermes como modelo por defecto
             const model = activeChat()?.model || DEFAULT_MODEL_ID;
-            state.chats[id] = { id, title: 'Nuevo Chat', model, history: [], tokTotal: 0, ts: Date.now() };
+            state.chats[id] = { id, title: 'New Chat', model, history: [], tokTotal: 0, ts: Date.now() };
             state.activeChatId = id;
             saveState();
             if (!silent) switchChat(id);
@@ -261,7 +261,7 @@
             genT.classList.add('hidden');
             if (!engineLoading) {
                 const isGeneratingHere = busy && streamingChatId === id;
-                setStatus(isGeneratingHere ? 'gen' : 'ok', isGeneratingHere ? 'Generando...' : 'Listo');
+                setStatus(isGeneratingHere ? 'gen' : 'ok', isGeneratingHere ? 'Generating...' : 'Ready');
             }
             if (busy && streamingChatId === id) {
                 sendEl.innerHTML = '<i class="fas fa-stop"></i>'; sendEl.classList.add('btn-stop'); sendEl.disabled = false;
@@ -295,13 +295,13 @@
         function renameCurrentChat() {
             const chat = activeChat();
             if (!chat) return;
-            const newName = prompt("Nuevo nombre para el chat:", chat.title);
+            const newName = prompt("New chat name:", chat.title);
             if (newName !== null && newName.trim() !== '') {
                 chat.title = newName.trim();
                 saveState();
                 refreshHeaderUI();
                 renderChatList();
-                toast('Chat renombrado', 'ok');
+                toast('Chat renamed', 'ok');
             }
         }
 
@@ -310,13 +310,13 @@
             if (e) e.stopPropagation();
             const chat = state.chats[id];
             if (!chat) return;
-            const newName = prompt("Nuevo nombre para el chat:", chat.title);
+            const newName = prompt("New chat name:", chat.title);
             if (newName !== null && newName.trim() !== '') {
                 chat.title = newName.trim();
                 saveState();
                 if (id === state.activeChatId) refreshHeaderUI();
                 renderChatList();
-                toast('Chat renombrado', 'ok');
+                toast('Chat renamed', 'ok');
             }
         }
 
@@ -325,7 +325,7 @@
                 <div class="chat-item ${c.id === state.activeChatId ? 'active' : ''}" onclick="switchChat('${c.id}')">
                     <div class="flex-1 min-w-0">
                         <p class="text-xs font-medium truncate chat-title-edit" ondblclick="renameChatFromList('${c.id}', event)" title="Doble clic para renombrar">${c.title}${streamingChatId === c.id ? ' <i class="fas fa-circle-notch fa-spin" style="font-size:9px"></i>' : ''}</p>
-                        <p class="text-[10px] text-[var(--fg-dim)] truncate">${MODELS.find(m=>m.id===c.model)?.name || 'Modelo'} · ${c.history.length} msgs</p>
+                        <p class="text-[10px] text-[var(--fg-dim)] truncate">${MODELS.find(m=>m.id===c.model)?.name || 'Model'} · ${c.history.length} msgs</p>
                     </div>
                     <button class="del-btn p-1" onclick="deleteChat('${c.id}', event)" aria-label="Borrar"><i class="fas fa-xmark text-[10px]"></i></button>
                 </div>`).join('');
@@ -352,12 +352,12 @@
                         <svg viewBox="0 0 512 512" fill="white" class="w-12 h-12"><path d="M0 464V316.9C0 208.5 68.3 111.8 170.5 75.6L340.2 15.5C361.6 7.9 384 23.8 384 46.4c0 11-5.5 21.2-14.6 27.3L336 96c48.1 0 91.2 29.8 108.1 74.9l48.6 129.5c11.8 31.4 4.1 66.8-19.6 90.5c-16 16-37.8 25.1-60.5 25.1h-3.4c-26.1 0-50.9-11.6-67.6-31.7l-32.3-38.7c-11.7 4.1-24.2 6.4-37.3 6.4l-.1 0 0 0c-6.3 0-12.5-.5-18.6-1.5c-3.6-.6-7.2-1.4-10.7-2.3l0 0c-28.9-7.8-53.1-26.8-67.8-52.2c-4.4-7.6-14.2-10.3-21.9-5.8s-10.3 14.2-5.8 21.9c24 41.5 68.3 70 119.3 71.9l47.2 70.8c4 6.1 6.2 13.2 6.2 20.4c0 20.3-16.5 36.8-36.8 36.8H48c-26.5 0-48-21.5-48-48zM328 224c13.3 0 24-10.7 24-24s-10.7-24-24-24s-24 10.7-24 24s10.7 24 24 24z"/></svg>
                     </div>
                     <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">HorseAI</h2>
-                    <p class="text-[var(--fg-dim)] max-w-md mb-8 text-sm leading-relaxed">Selecciona el modelo en el panel. El historial se guarda automáticamente.</p>
+                    <p class="text-[var(--fg-dim)] max-w-md mb-8 text-sm leading-relaxed">Select a model in the panel. Chat history is saved automatically.</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-lg w-full">
-                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-code text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Explicame como funciona QuickSort en Python</button>
-                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-lightbulb text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Escribe una historia corta de ciencia ficcion</button>
-                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-square-root-variable text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Demuestra por que la raiz de 2 es irracional</button>
-                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-globe text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Diferencias entre WebGPU, WebGL y Vulkan?</button>
+                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-code text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Explain how QuickSort works in Python</button>
+                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-lightbulb text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Write a short science fiction story</button>
+                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-square-root-variable text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Prove why the square root of 2 is irrational</button>
+                        <button onclick="useChip(this)" class="chip text-left px-4 py-3 rounded-xl border border-[var(--border)] text-sm text-[var(--fg-dim)]"><i class="fas fa-globe text-[10px] mb-1.5 block text-[var(--accent)]/60"></i>Differences between WebGPU, WebGL, and Vulkan?</button>
                     </div>
                 </div>`;
             } else {
@@ -394,16 +394,16 @@
             });
         }
 
-        // Añadir modelo personalizado
+        // Add model personalizado
         function addCustomModel() {
-            const id = prompt("ID del modelo (ej. Llama-3.1-8B-Instruct-q4f16_1-MLC):");
+            const id = prompt("Model ID (e.g. Llama-3.1-8B-Instruct-q4f16_1-MLC):");
             if (!id) return;
-            const name = prompt("Nombre amigable (ej. Mi modelo):");
+            const name = prompt("Friendly name (e.g. My Model):");
             if (!name) return;
-            const vram = prompt("VRAM estimada (ej. 4.2 GB):") || "? GB";
+            const vram = prompt("Estimated VRAM (e.g. 4.2 GB):") || "? GB";
             // Evitar duplicados
             if (MODELS.some(m => m.id === id)) {
-                toast("Ya existe un modelo con ese ID", "warn");
+                toast("A model with that ID already exists", "warn");
                 return;
             }
             const newModel = { id, name, vram, custom: true };
@@ -420,11 +420,11 @@
                 saveState();
                 refreshHeaderUI();
             }
-            toast(`Modelo "${name}" añadido`, "ok");
+            toast(`Model "${name}" added`, "ok");
         }
 
         async function onModelChange() {
-            if (busy) { toast("Detén la generación primero", "warn"); $('modelSelect').value = activeChat()?.model; return; }
+            if (busy) { toast("Stop the generation first", "warn"); $('modelSelect').value = activeChat()?.model; return; }
             const chat = activeChat(); if (!chat) return;
             const newModel = $('modelSelect').value;
             chat.model = newModel;
@@ -440,7 +440,7 @@
             if (engineLoading && loadingModelId === modelId) return; // ya se está cargando este modelo
             if (engine) { try { engine.unload(); } catch(e) {} engine = null; loadedModelId = null; }
             engineLoading = true; loadingModelId = modelId;
-            setStatus('loading', 'Conectando...'); progBox.classList.remove('hidden'); progBar.style.width = '5%'; progTxt.textContent = 'Resolviendo módulos...'; updBtn();
+            setStatus('loading', 'Connecting...'); progBox.classList.remove('hidden'); progBar.style.width = '5%'; progTxt.textContent = 'Resolving modules...'; updBtn();
             let progressReceived = false;
             loadTimeout = setTimeout(() => { if (!progressReceived) failLoad("Timeout: Servidor MLC no responde."); }, 30000);
             try {
@@ -449,13 +449,13 @@
                         if (!progressReceived) { progressReceived = true; clearTimeout(loadTimeout); }
                         const p = Math.max(0, Math.min(100, Math.round(report.progress * 100)));
                         progBar.style.width = p + '%'; progTxt.textContent = report.text || `${p}%`;
-                        if (report.text.includes("Load")) setStatus('loading', `Descargando (${p}%)...`);
-                        else if (report.text.includes("Compile")) setStatus('loading', 'Compilando shaders...');
-                        else if (report.text.includes("Finish")) setStatus('loading', 'Iniciando...');
+                        if (report.text.includes("Load")) setStatus('loading', `Downloading (${p}%)...`);
+                        else if (report.text.includes("Compile")) setStatus('loading', 'Compiling shaders...');
+                        else if (report.text.includes("Finish")) setStatus('loading', 'Starting...');
                     }
                 });
                 clearTimeout(loadTimeout); engineLoading = false; loadingModelId = null; loadedModelId = modelId;
-                setStatus('ok', 'Listo'); progBox.classList.add('hidden');
+                setStatus('ok', 'Ready'); progBox.classList.add('hidden');
                 toast(`${MODELS.find(m => m.id === modelId)?.name || modelId} listo`, 'ok'); updBtn();
             } catch (e) { clearTimeout(loadTimeout); engineLoading = false; loadingModelId = null; failLoad(e.message); }
         }
@@ -479,7 +479,7 @@
             // corresponde al modelo asignado a este chat, lo cargamos primero y no enviamos aún.
             const wantedModel = chat.model || DEFAULT_MODEL_ID;
             if (wantedModel !== loadedModelId) {
-                toast("Cargando el modelo de este chat, espera un momento...", "warn");
+                toast("Loading this chat's model, please wait...", "warn");
                 if (!engineLoading || loadingModelId !== wantedModel) initEngine();
                 return;
             }
@@ -512,7 +512,7 @@
                 inpEl.value = ''; resize(inpEl); saveState();
 
                 if (chatId === state.activeChatId) {
-                    setStatus('gen', 'Generando...');
+                    setStatus('gen', 'Generating...');
                     sendEl.innerHTML = '<i class="fas fa-stop"></i>'; sendEl.classList.add('btn-stop'); sendEl.disabled = false;
                 }
                 renderChatList();
@@ -526,7 +526,7 @@
 
                 const stream = await engine.chat.completions.create({ messages: chat.history.slice(-15), max_tokens: 1024, temperature: 0.7, stream: true });
                 for await (const chunk of stream) {
-                    if (isStopped) { toast("Detenido", "warn"); break; }
+                    if (isStopped) { toast("Stopped", "warn"); break; }
                     const delta = chunk.choices[0]?.delta?.content;
                     if (delta) {
                         fullText += delta;
@@ -553,10 +553,10 @@
                 busy = false; streamingChatId = null;
                 const stillExists = !!state.chats[chatId];
                 if (stillExists && chatId === state.activeChatId) {
-                    setStatus('ok', 'Listo');
+                    setStatus('ok', 'Ready');
                     sendEl.innerHTML = '<i class="fas fa-arrow-up"></i>'; sendEl.classList.remove('btn-stop'); updBtn(); scrollEnd();
                 } else if (stillExists && fullText) {
-                    toast(`Respuesta lista en "${chat.title}"`, 'ok');
+                    toast(`Response ready in "${chat.title}"`, 'ok');
                 }
                 renderChatList();
             }
@@ -599,11 +599,11 @@
 
         function clearChat() {
             const chat = activeChat(); if (!chat) return;
-            if (streamingChatId === chat.id) { toast("Detén la generación antes de limpiar este chat", "warn"); return; }
-            chat.history = []; chat.tokTotal = 0; chat.title = 'Nuevo Chat';
+            if (streamingChatId === chat.id) { toast("Stop the generation before clearing this chat", "warn"); return; }
+            chat.history = []; chat.tokTotal = 0; chat.title = 'New Chat';
             tokC.textContent = '0 tokens'; genT.classList.add('hidden');
-            headerTitle.textContent = 'Nuevo Chat';
-            saveState(); renderChatList(); renderMessages(); toast('Chat limpiado', 'info');
+            headerTitle.textContent = 'New Chat';
+            saveState(); renderChatList(); renderMessages(); toast('Chat cleared', 'info');
         }
         
         function useChip(btn) { inpEl.value = btn.textContent.trim(); updBtn(); send(); }
